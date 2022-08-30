@@ -39,10 +39,12 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
-  Container newInput(TextEditingController controller, String name) {
+  Container newInput(TextEditingController controller, String name,
+      {String type = "Text"}) {
     return Container(
         margin: const EdgeInsets.symmetric(vertical: 10.0),
         child: TextFormField(
+          obscureText: type == "Password" ? true : false,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter some text';
@@ -110,7 +112,7 @@ class HomeState extends State<Home> {
           children: [
             newInput(instanceController, "url"),
             newInput(nameController, "Name"),
-            newInput(passwordController, "Password"),
+            newInput(passwordController, "Password", type: "Password"),
             Container(
                 margin: const EdgeInsets.symmetric(vertical: 10.0),
                 child: ElevatedButton(
