@@ -14,7 +14,7 @@ class FeedPage {
   }
 
   Widget toWidget(BuildContext context) {
-    if (articles == null) {
+    if (articles == null || articles!.isEmpty) {
       return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [Center(child: CircularProgressIndicator())]);
@@ -42,8 +42,8 @@ class FeedPages {
     return pages[index];
   }
 
-  List<Widget> getWidgets(BuildContext context) {
-    return pages.toList().map((e) => e.toWidget(context)).toList();
+  List<Widget> getWidgets(BuildContext context, Function(int) refresh) {
+    return pages.map((e) => e.toWidget(context)).toList();
   }
 }
 
@@ -69,7 +69,6 @@ class LoggedState extends State<Logged> with SingleTickerProviderStateMixin {
   List<Feed> feeds = [];
   List<Widget> tabFeed = [];
   FeedPages pageFeed = FeedPages();
-  StreamSubscription<List>? feedLoading;
   List<Widget> viewArticles = [];
   TabController? _tabController;
 
@@ -104,13 +103,22 @@ class LoggedState extends State<Logged> with SingleTickerProviderStateMixin {
     setArticles(index);
   }
 
-  void setArticles(int index) {
-    session
-        .getArticles(feeds[index])
-        .then((articles) => pageFeed.setArticles(index, articles))
-        .then((_) => setState(() {
-              viewArticles = pageFeed.getWidgets(context);
-            }));
+  Future<void> setArticles(int index, {bool showSnackbar = false}) async {
+    List<Articles> articles = await session.getArticles(feeds[index]);
+
+    pageFeed.setArticles(index, articles);
+    setState(() {
+      viewArticles =
+          pageFeed.getWidgets(context, (index) => setArticles(index));
+    });
+
+    if (showSnackbar) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Feeds Refreshed'),
+        ),
+      );
+    }
   }
 
   void setFeeds(List<Feed>? gettedfeeds) {
@@ -124,7 +132,8 @@ class LoggedState extends State<Logged> with SingleTickerProviderStateMixin {
         tabFeed.add(Tab(child: Text(feed.title)));
         pageFeed.addPage(FeedPage());
       }
-      viewArticles = pageFeed.getWidgets(context);
+      viewArticles =
+          pageFeed.getWidgets(context, (index) => setArticles(index));
 
       _tabController = TabController(length: tabFeed.length, vsync: this);
 
@@ -222,7 +231,16 @@ class LoggedState extends State<Logged> with SingleTickerProviderStateMixin {
         ),
         body: PageView(
           controller: _pageController,
-          children: viewArticles,
+          children: viewArticles
+              .asMap()
+              .map((index, value) => MapEntry(
+                  index,
+                  RefreshIndicator(
+                    child: value,
+                    onRefresh: () => setArticles(index, showSnackbar: true),
+                  )))
+              .values
+              .toList(),
           onPageChanged: (index) => tabPageListener(
             "page",
             index,
