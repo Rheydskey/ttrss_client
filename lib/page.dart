@@ -119,9 +119,10 @@ class LoggedState extends State<Logged> with SingleTickerProviderStateMixin {
     return Scaffold(
         backgroundColor: Colors.grey.shade200,
         appBar: AppBar(
-          title: const Text("TinyTinyRss"),
+          title:
+              const Text("TinyTinyRss", style: TextStyle(color: Colors.white)),
           centerTitle: true,
-          backgroundColor: Colors.purple,
+          backgroundColor: Colors.purple.shade900,
           bottom: _tabController!.length == 0
               ? null
               : TabBar(
