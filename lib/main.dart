@@ -46,10 +46,9 @@ class HomeState extends State<Home> {
         child: TextFormField(
           obscureText: type == "Password" ? true : false,
           validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter some text';
-            }
-            return null;
+            return value == null || value.isEmpty
+                ? 'Please enter some text'
+                : null;
           },
           controller: controller,
           decoration: InputDecoration(
@@ -105,28 +104,32 @@ class HomeState extends State<Home> {
       child: Container(
         alignment: Alignment.center,
         margin: const EdgeInsets.all(5.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            newInput(instanceController, "url"),
-            newInput(nameController, "Name"),
-            newInput(passwordController, "Password", type: "Password"),
-            Container(
-                margin: const EdgeInsets.symmetric(vertical: 10.0),
-                child: ElevatedButton(
-                  child: const Text("Login"),
-                  onPressed: () {
-                    if (disabled) {
-                      return;
-                    }
-                    sendFormAndChangeViewIfValid();
-                  },
-                )),
-          ],
-        ),
+        child: createForm(),
       ),
+    );
+  }
+
+  Widget createForm() {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        newInput(instanceController, "url"),
+        newInput(nameController, "Name"),
+        newInput(passwordController, "Password", type: "Password"),
+        Container(
+            margin: const EdgeInsets.symmetric(vertical: 10.0),
+            child: ElevatedButton(
+              child: const Text("Login"),
+              onPressed: () {
+                if (disabled) {
+                  return;
+                }
+                sendFormAndChangeViewIfValid();
+              },
+            )),
+      ],
     );
   }
 
